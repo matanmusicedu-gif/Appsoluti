@@ -1,13 +1,20 @@
-{"theme_color":"#8936FF","background_color":"#2EC6FE","orientation":"any","display":"standalone","dir":"auto","lang":"en-US""icons": [
+{
+  "theme_color": "#8936FF",
+  "background_color": "#2EC6FE",
+  "orientation": "any",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-US",
+  "icons": [
     {
-      "src": "iconv2.png",
+      "src": "Iconv2.png",
       "sizes": "192x192",
-      "type": "png"
+      "type": "image/png"
     },
     {
-      "src": "iconv3.png",
+      "src": "iconv4.png",
       "sizes": "512x512",
-      "type": "png"
+      "type": "image/png"
     }
   ]
 }
