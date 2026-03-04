@@ -2,12 +2,12 @@
     {
       "src": "icon1.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "png"
     },
     {
       "src": "icon512_maskable.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "png"
     }
   ]
 }}
