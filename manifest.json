@@ -1,13 +1,13 @@
 {"theme_color":"#8936FF","background_color":"#2EC6FE","orientation":"any","display":"standalone","dir":"auto","lang":"en-US""icons": [
     {
-      "src": "icon1.png",
+      "src": "iconv2.png",
       "sizes": "192x192",
       "type": "png"
     },
     {
-      "src": "icon512_maskable.png",
+      "src": "iconv3_rounded.png",
       "sizes": "512x512",
       "type": "png"
     }
   ]
-}}
+}
