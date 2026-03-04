@@ -944,9 +944,6 @@ function rFer(root){const s=S.fe;const sec=E('div',{style:{display:'flex',flexDi
   else ua.appendChild(E('div',{style:{textAlign:'center',fontSize:'10px',color:'var(--t3)'}},'No saved tracks · Upload MP3/WAV/OGG'));
   sec.appendChild(ua);root.appendChild(sec);setTimeout(initFeCv,80)}
 
-  document.addEventListener('touchstart', function() {
-  AE.unlock();
-}, { once: true });
 
 /* ═══ INIT ═══ */
 R();
@@ -954,9 +951,13 @@ if('serviceWorker' in navigator){const sw=`const CACHE='appsoluti-v7';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./',self.location.href])));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));return self.clients.claim()});
 self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const cl=res.clone();caches.open(CACHE).then(c=>c.put(e.request,cl))}return res}).catch(()=>caches.match('./'))))});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{})}
-</script>
+navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{})}
+
+document.addEventListener('touchstart', function() {
+  AE.unlock();
+}, { once: true });</script>
 </body>
 </html>
+
 
 
