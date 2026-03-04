@@ -201,7 +201,7 @@ const chordGuitar=(midiN,dur=3)=>{const c=g(),t=c.currentTime;
     const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.value=freq;
     g2.gain.setValueAtTime(.12,t+d);g2.gain.exponentialRampToValueAtTime(.001,t+d+dur*.65);o2.connect(g2);g2.connect(m);o2.start(t+d);o2.stop(t+d+dur)})};
 
-return{g,click,applause,unlock,piano,epiano,chordPiano,chordGuitar,catRv,rv}})();
+return{g,click,applause,unlock:g,piano,epiano,chordPiano,chordGuitar,catRv,rv}})();
 
 /* ── Fermatan ambient engine (global scope) ── */
 let penLoops=[],lastHighTime=0;
@@ -958,4 +958,5 @@ self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>
 </script>
 </body>
 </html>
+
 
