@@ -315,7 +315,7 @@ function updateBeatDots(){const dots=document.getElementById('m-dots');if(!dots)
     ch[i].style.border=mt?'1px dashed var(--t3)':a?'none':'1px solid var(--b1)';
     ch[i].style.transform=a&&!mt?'scale(1.4)':'scale(1)';ch[i].style.opacity=mt?'.3':'1';
     ch[i].style.boxShadow=a&&!mt?(f?'0 0 12px rgba(232,168,64,.6)':'0 0 8px rgba(251,191,36,.35)'):''}}
-function startM(){const c=AE.g();mBn=0;mNt=c.currentTime+.05;
+function startM(){const c=AE.g();c.resume();mBn=0;mNt=c.currentTime+.05;
   const sched=()=>{while(mNt<c.currentTime+.1){const beat=mBn,{bpm,nv,snd,pat,beats,mute,acc,bd,bds}=S.m;
     const isMt=mute[beat],isAcc=acc[beat];
     let spb=60/bpm;if(nv===8)spb/=2;if(nv===16)spb/=4;
@@ -958,6 +958,7 @@ document.addEventListener('touchstart', function() {
 }, { once: true });</script>
 </body>
 </html>
+
 
 
 
