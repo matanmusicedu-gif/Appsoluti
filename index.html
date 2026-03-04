@@ -127,7 +127,13 @@ function playSampPitch(key,semi,time){var buf=_SB[key];if(!buf)return;var c=AE.g
 /* ═══ AUDIO ENGINE ═══ */
 const AE=(()=>{
 let ctx,rvB,catB;
-const g=()=>{if(!ctx||ctx.state==='closed')ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();if(!_SBL&&Object.keys(_SB).length===0)ensureSamps();return ctx};
+const g=()=>{if(!ctx||ctx.state==='closed')ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
+             // Mobile audio unlock
+document.addEventListener('touchstart', function unlock() {
+  if (typeof g === 'function') g();
+  document.removeEventListener('touchstart', unlock);
+}, { once: true });
+             if(!_SBL&&Object.keys(_SB).length===0)ensureSamps();return ctx};
 const rv=()=>{if(rvB)return rvB;const c=g(),l=c.sampleRate*2.5,b=c.createBuffer(2,l,c.sampleRate);
   for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<l;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.6))*.25}rvB=b;return b};
 const catRv=()=>{if(catB)return catB;const c=g(),l=c.sampleRate*5,b=c.createBuffer(2,l,c.sampleRate);
@@ -195,7 +201,7 @@ const chordGuitar=(midiN,dur=3)=>{const c=g(),t=c.currentTime;
     const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.value=freq;
     g2.gain.setValueAtTime(.12,t+d);g2.gain.exponentialRampToValueAtTime(.001,t+d+dur*.65);o2.connect(g2);g2.connect(m);o2.start(t+d);o2.stop(t+d+dur)})};
 
-return{g,click,applause,piano,epiano,chordPiano,chordGuitar,catRv,rv}})();
+return{g,click,applause,unlock,piano,epiano,chordPiano,chordGuitar,catRv,rv}})();
 
 /* ── Fermatan ambient engine (global scope) ── */
 let penLoops=[],lastHighTime=0;
@@ -938,6 +944,10 @@ function rFer(root){const s=S.fe;const sec=E('div',{style:{display:'flex',flexDi
   else ua.appendChild(E('div',{style:{textAlign:'center',fontSize:'10px',color:'var(--t3)'}},'No saved tracks · Upload MP3/WAV/OGG'));
   sec.appendChild(ua);root.appendChild(sec);setTimeout(initFeCv,80)}
 
+  document.addEventListener('touchstart', function() {
+  AE.unlock();
+}, { once: true });
+
 /* ═══ INIT ═══ */
 R();
 if('serviceWorker' in navigator){const sw=`const CACHE='appsoluti-v7';
@@ -948,3 +958,4 @@ self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>
 </script>
 </body>
 </html>
+
