@@ -1,4 +1,7 @@
 {
+  "name": "Appsoluti",
+  "short_name": "Appsoluti",
+  "start_url": "/Appsoluti/",
   "theme_color": "#8936FF",
   "background_color": "#2EC6FE",
   "orientation": "any",
@@ -9,12 +12,12 @@
     {
       "src": "Iconv2.png",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/png"
     },
     {
       "src": "iconv4.png",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/png"
     }
   ]
 }
