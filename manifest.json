@@ -3,11 +3,9 @@
   "short_name": "Appsoluti",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#2EC6FE",
-  "theme_color": "#8936FF",
-  "orientation": "any",
-  "dir": "auto",
-  "lang": "en-US",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon512_maskable.png",
@@ -15,7 +13,7 @@
       "type": "image/png"
     },
     {
-      "src": "iconv512_rounded.png",
+      "src": "icon512_rounded.png",
       "sizes": "512x512",
       "type": "image/png"
     }
