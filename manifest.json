@@ -1,7 +1,7 @@
 {
   "name": "Appsoluti",
   "short_name": "Appsoluti",
-  "start_url": "/Appsoluti/",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#2EC6FE",
   "theme_color": "#8936FF",
