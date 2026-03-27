@@ -1,0 +1,9 @@
+# Raw (untrimmed) piano & rhodes samples — too large for GitHub
+assets/audio/keyboard/piano/
+assets/audio/keyboard/rhodes/
+
+# Old/backup files
+Old versions/
+_old_index/
+.claude/
+node_modules/
