@@ -1525,24 +1525,29 @@ const VIS_PALETTES={
 function rPia(root){const s=S.pi;
   /* Toggle nav visibility for horizontal mode */
   const navEl=document.querySelector('.nav');if(navEl)navEl.style.display=s.horiz?'none':'';
-  const sec=E('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:s.horiz?'0':'8px',width:'100%',flex:'1'}});
+  /* In landscape mode: CSS-rotate the entire piano 90° so it appears horizontal even in portrait */
+  const vW=window.innerWidth,vH=window.innerHeight;
+  const sec=s.horiz?E('div',{style:{position:'fixed',top:'0',left:'0',width:vH+'px',height:vW+'px',
+    transform:`rotate(-90deg) translateX(-${vH}px)`,transformOrigin:'top left',
+    display:'flex',flexDirection:'column',alignItems:'center',gap:'0',background:'var(--bg)',zIndex:'100',overflow:'hidden'}}):
+    E('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'8px',width:'100%',flex:'1'}});
   if(!s.horiz){/* Spacer pushes keyboard down */
     sec.appendChild(E('div',{style:{flex:'1',minHeight:'20px'}}));}
   const _bs={borderRadius:'10px',background:'var(--s1)',border:'1px solid var(--b1)',color:'var(--t2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   const _bOn={borderRadius:'10px',background:'var(--acg)',border:'1px solid rgba(232,168,64,.2)',color:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   if(s.horiz){
-    /* Landscape mode — no orientation detection, just layout toggle */
+    /* CSS-rotated landscape mode — works on every phone */
     const exitHoriz=()=>{s.horiz=false;R()};
-    /* Compact bar: oct + exit */
-    const hBar=E('div',{style:{width:'100%',display:'flex',gap:'8px',alignItems:'center',justifyContent:'center',padding:'6px 10px',flexShrink:'0'}});
-    hBar.appendChild(E('button',{style:{..._bs,width:'36px',height:'36px',fontSize:'17px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
+    /* Compact bar */
+    const hBar=E('div',{style:{width:'100%',display:'flex',gap:'8px',alignItems:'center',justifyContent:'center',padding:'5px 10px',flexShrink:'0'}});
+    hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
     hBar.appendChild(E('span',{style:{color:'var(--t1)',fontSize:'12px',fontWeight:'500',minWidth:'56px',textAlign:'center'}},`Oct ${s.oct}–${s.oct+2}`));
-    hBar.appendChild(E('button',{style:{..._bs,width:'36px',height:'36px',fontSize:'17px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
-    const tt2=E('div',{className:'pt'});tt2.appendChild(E('button',{className:`pb ${s.type==='piano'?'on':''}`,style:{fontSize:'16px',padding:'5px 9px'},onClick:()=>{s.type='piano';R()}},'🎹'));tt2.appendChild(E('button',{className:`pb ${s.type==='epiano'?'on':''}`,style:{fontSize:'16px',padding:'5px 9px'},onClick:()=>{s.type='epiano';R()}},'⚡'));hBar.appendChild(tt2);
-    hBar.appendChild(E('button',{style:{..._bOn,padding:'6px 16px',fontSize:'12px',fontWeight:'600'},onClick:exitHoriz},'✕'));
+    hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
+    const tt2=E('div',{className:'pt'});tt2.appendChild(E('button',{className:`pb ${s.type==='piano'?'on':''}`,style:{fontSize:'15px',padding:'4px 8px'},onClick:()=>{s.type='piano';R()}},'🎹'));tt2.appendChild(E('button',{className:`pb ${s.type==='epiano'?'on':''}`,style:{fontSize:'15px',padding:'4px 8px'},onClick:()=>{s.type='epiano';R()}},'⚡'));hBar.appendChild(tt2);
+    hBar.appendChild(E('button',{style:{..._bOn,padding:'5px 14px',fontSize:'12px',fontWeight:'600'},onClick:exitHoriz},'✕ Exit'));
     sec.appendChild(hBar);
     /* Visualizer strip */
-    const hVisCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'55px',display:'block',flexShrink:'0'}});
+    const hVisCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'50px',display:'block',flexShrink:'0'}});
     sec.appendChild(hVisCvs);setTimeout(()=>initPianoVis(hVisCvs,s),50);
   }else{
   /* ── Row 1: Octave, Instrument, Wide, Fullscreen ── */
@@ -1584,9 +1589,9 @@ function rPia(root){const s=S.pi;
   /* Keyboard label mapping for QWERTY overlay — two octaves */
   const kbLabels=[{0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'},{0:'Z',1:'S',2:'X',3:'D',4:'C',5:'V',6:'G',7:'B',8:'H',9:'N',10:'J',11:'M'}];
   const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch',flexShrink:'0'}});
-  const _isLandNow=window.innerWidth>window.innerHeight;
-  /* landscape: height minus compact bar(52px) + vis strip(55px) + safe margin(8px) = 115 */
-  const kbH=s.horiz?Math.max(150,(window.innerHeight||375)-115):Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
+  /* _isLandNow removed — landscape mode uses CSS rotation instead */
+  /* In rotated landscape: container is vW tall (phone width ~375px), minus bar(42)+vis(50)+pad(8)=100 */
+  const kbH=s.horiz?Math.max(150,vW-100):Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
   const pw=E('div',{style:{position:'relative',width:`${100*s.zoom}%`,minWidth:'100%',height:kbH+'px',touchAction:'pan-x',userSelect:'none'}});
   const oct=3,tw=oct*7,kw=100/tw,wP=[0,2,4,5,7,9,11],bP=[1,3,-1,6,8,10,-1],lbs=['C','D','E','F','G','A','B'],bOff=[.62,1.72,-1,3.58,4.65,5.72,-1];
   let wi=0;for(let o=0;o<oct;o++){const base=(s.oct+o)*12;
