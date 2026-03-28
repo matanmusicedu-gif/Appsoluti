@@ -36,6 +36,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}input[type
 .main{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 0 84px;-webkit-overflow-scrolling:touch}
 .tc{animation:fi .18s ease;padding:0 10px;min-height:calc(100dvh - 130px)}
 @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(90deg)}}
 .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.96);backdrop-filter:blur(10px);border-top:1px solid var(--b1);padding-bottom:var(--sab);z-index:100}
 .ni{display:flex;justify-content:space-around;align-items:center;height:54px;max-width:560px;margin:0 auto}
 .nb{display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 5px;border-radius:8px;transition:.15s}
@@ -1529,16 +1530,28 @@ function rPia(root){const s=S.pi;
   const _bs={borderRadius:'10px',background:'var(--s1)',border:'1px solid var(--b1)',color:'var(--t2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   const _bOn={borderRadius:'10px',background:'var(--acg)',border:'1px solid rgba(232,168,64,.2)',color:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   if(s.horiz){
-    /* Horizontal mode: floating overlay with exit + octave controls */
-    const hBar=E('div',{style:{position:'fixed',top:'6px',left:'50%',transform:'translateX(-50%)',zIndex:'999',display:'flex',gap:'6px',alignItems:'center',background:'rgba(10,10,10,.85)',borderRadius:'12px',padding:'4px 10px',border:'1px solid var(--b2)',backdropFilter:'blur(8px)'}});
-    hBar.appendChild(E('button',{style:{..._bs,width:'30px',height:'30px',fontSize:'14px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
-    hBar.appendChild(E('span',{style:{color:'var(--t2)',fontSize:'11px',fontWeight:'500'}},`Oct ${s.oct}–${s.oct+2}`));
-    hBar.appendChild(E('button',{style:{..._bs,width:'30px',height:'30px',fontSize:'14px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
-    /* iOS hint — screen.orientation.lock not supported on Safari */
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-    if(isIOS)hBar.appendChild(E('span',{style:{color:'var(--t3)',fontSize:'9px',marginLeft:'4px'}},'↻ rotate phone'));
-    hBar.appendChild(E('button',{style:{..._bOn,padding:'4px 10px',fontSize:'11px'},onClick:()=>{s.horiz=false;try{screen.orientation.unlock()}catch(e){}try{document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen()}catch(e){}R()}},'Exit'));
+    const isLandscape=window.innerWidth>window.innerHeight;
+    const exitHoriz=()=>{s.horiz=false;try{screen.orientation.unlock()}catch(e){}try{document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen()}catch(e){}R()};
+    /* Floating control bar */
+    const hBar=E('div',{style:{position:'fixed',top:'8px',left:'50%',transform:'translateX(-50%)',zIndex:'999',display:'flex',gap:'6px',alignItems:'center',background:'rgba(10,10,10,.9)',borderRadius:'14px',padding:'6px 12px',border:'1px solid var(--b2)',backdropFilter:'blur(10px)',whiteSpace:'nowrap'}});
+    hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
+    hBar.appendChild(E('span',{style:{color:'var(--t1)',fontSize:'12px',fontWeight:'500',minWidth:'60px',textAlign:'center'}},`Oct ${s.oct}–${s.oct+2}`));
+    hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
+    hBar.appendChild(E('button',{style:{..._bOn,padding:'6px 14px',fontSize:'12px'},onClick:exitHoriz},'✕ Exit'));
     sec.appendChild(hBar);
+    /* If still in portrait, show a clear rotate prompt instead of broken keyboard */
+    if(!isLandscape){
+      const rotMsg=E('div',{style:{position:'fixed',inset:'0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(10,10,10,.97)',zIndex:'100',gap:'16px'}});
+      rotMsg.appendChild(E('div',{style:{fontSize:'64px',animation:'spin 2s linear infinite'}},'📱'));
+      rotMsg.appendChild(E('div',{style:{fontSize:'18px',color:'var(--t1)',fontWeight:'500'}},'Rotate your phone'));
+      rotMsg.appendChild(E('div',{style:{fontSize:'13px',color:'var(--t2)'}},'Landscape mode for piano'));
+      rotMsg.appendChild(E('button',{style:{marginTop:'8px',padding:'10px 24px',borderRadius:'12px',background:'var(--s1)',border:'1px solid var(--b1)',color:'var(--t2)',fontSize:'13px',cursor:'pointer'},onClick:exitHoriz},'Cancel'));
+      sec.appendChild(rotMsg);
+      /* Re-check orientation when phone rotates */
+      const onOrient=()=>{if(window.innerWidth>window.innerHeight){window.removeEventListener('resize',onOrient);R()}};
+      window.addEventListener('resize',onOrient);
+      return;
+    }
   }else{
   /* ── Row 1: Octave, Instrument, Wide, Fullscreen ── */
   const cr=E('div',{style:{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap',justifyContent:'center',padding:'2px 0'}});
@@ -1588,8 +1601,8 @@ function rPia(root){const s=S.pi;
   /* Keyboard label mapping for QWERTY overlay */
   const kbLabels={0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'};
   const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch',flexShrink:'0'}});
-  /* Portrait: fill ~40% of screen height so keyboard is usable on phones */
-  const kbH=s.horiz?(window.innerHeight||600)-20:Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
+  const _isLandNow=window.innerWidth>window.innerHeight;
+  const kbH=s.horiz&&_isLandNow?(window.innerHeight||600)-56:Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
   const pw=E('div',{style:{position:'relative',width:`${100*s.zoom}%`,minWidth:'100%',height:kbH+'px',touchAction:'pan-x',userSelect:'none'}});
   const oct=3,tw=oct*7,kw=100/tw,wP=[0,2,4,5,7,9,11],bP=[1,3,-1,6,8,10,-1],lbs=['C','D','E','F','G','A','B'],bOff=[.62,1.72,-1,3.58,4.65,5.72,-1];
   let wi=0;for(let o=0;o<oct;o++){const base=(s.oct+o)*12;
