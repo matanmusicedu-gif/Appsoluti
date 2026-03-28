@@ -1,4 +1,4 @@
-const CACHE='appsoluti-v1';
+const CACHE='appsoluti-v3';
 const PRECACHE=[
   './app.html',
   './manifest.json'
