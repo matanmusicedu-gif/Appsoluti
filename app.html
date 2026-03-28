@@ -1484,7 +1484,8 @@ function getMIDIInputNames(){
 }
 
 /* ═══ COMPUTER KEYBOARD PIANO INPUT ═══ */
-const KB_MAP={'q':0,'2':1,'w':2,'3':3,'e':4,'r':5,'5':6,'t':7,'6':8,'y':9,'7':10,'u':11};
+/* Upper row = oct+0, lower row = oct+1 (semitone offset 12–23) */
+const KB_MAP={'q':0,'2':1,'w':2,'3':3,'e':4,'r':5,'5':6,'t':7,'6':8,'y':9,'7':10,'u':11,'z':12,'s':13,'x':14,'d':15,'c':16,'v':17,'g':18,'b':19,'h':20,'n':21,'j':22,'m':23};
 const KB_OCT_DOWN='1',KB_OCT_UP='=';
 let _kbActiveNotes={};
 function _onKbDown(e){
@@ -1552,6 +1553,9 @@ function rPia(root){const s=S.pi;
       window.addEventListener('resize',onOrient);
       return;
     }
+    /* Small visualizer strip above keys in landscape mode */
+    const hVisCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'70px',display:'block',flexShrink:'0'}});
+    sec.appendChild(hVisCvs);setTimeout(()=>initPianoVis(hVisCvs,s),50);
   }else{
   /* ── Row 1: Octave, Instrument, Wide, Fullscreen ── */
   const cr=E('div',{style:{display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap',justifyContent:'center',padding:'2px 0'}});
@@ -1574,21 +1578,15 @@ function rPia(root){const s=S.pi;
   cr2.appendChild(E('span',{style:{fontSize:'10px',color:'var(--t3)'}},'Vol'));
   cr2.appendChild(E('input',{type:'range',min:'10',max:'100',value:String(Math.round(s.vol*100)),style:{width:'90px',accentColor:'var(--ac)'},
     onInput:e=>{s.vol=+(parseInt(e.target.value)/100).toFixed(2)}}));
-  /* Wide (landscape) button */
-  cr2.appendChild(E('button',{style:{..._bs,padding:'7px 14px',fontSize:'13px',fontWeight:'500'},onClick:()=>{
+  /* Landscape / rotate button */
+  cr2.appendChild(E('button',{style:{..._bs,padding:'7px 14px',fontSize:'13px',fontWeight:'500',display:'flex',alignItems:'center',gap:'5px'},onClick:()=>{
     s.horiz=true;
-    /* Try to lock landscape orientation (Android/Chrome) */
     try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}
-    /* Try fullscreen for immersive mode */
-    const el=document.documentElement;
-    try{el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen()}catch(e){}
-    R()}},'↔ Wide'));
+    try{const el=document.documentElement;el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen()}catch(e){}
+    R()}},
+    E('span',{style:{fontSize:'16px',display:'inline-block',transform:'rotate(-90deg)'}},'📱'),
+    E('span',{},'Landscape')));
   sec.appendChild(cr2);
-  /* ── Fullscreen button ── */
-  const fsBtn=E('button',{style:{width:'100%',maxWidth:'340px',padding:'14px',borderRadius:'14px',background:'var(--s1)',border:'2px solid var(--b1)',color:'var(--t1)',fontSize:'16px',fontWeight:'500',cursor:'pointer',letterSpacing:'1px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'},
-    onClick:()=>{const el=document.documentElement;if(document.fullscreenElement){document.exitFullscreen&&document.exitFullscreen()}else{el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen()}}},
-    '⛶  Full Screen');
-  sec.appendChild(fsBtn);
   /* ── Visual color palette ── */
   const palRow=E('div',{style:{display:'flex',gap:'5px',justifyContent:'center',alignItems:'center'}});
   palRow.appendChild(E('span',{style:{fontSize:'9px',color:'var(--t3)',marginRight:'2px'}},'Colors'));
@@ -1598,8 +1596,8 @@ function rPia(root){const s=S.pi;
   /* ── Visual canvas (always on) ── */
   const visCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'200px',background:'rgba(0,0,0,.3)',borderRadius:'10px',border:'1px solid var(--b1)'}});sec.appendChild(visCvs);setTimeout(()=>initPianoVis(visCvs,s),50);
   }
-  /* Keyboard label mapping for QWERTY overlay */
-  const kbLabels={0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'};
+  /* Keyboard label mapping for QWERTY overlay — two octaves */
+  const kbLabels=[{0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'},{0:'Z',1:'S',2:'X',3:'D',4:'C',5:'V',6:'G',7:'B',8:'H',9:'N',10:'J',11:'M'}];
   const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch',flexShrink:'0'}});
   const _isLandNow=window.innerWidth>window.innerHeight;
   const kbH=s.horiz&&_isLandNow?(window.innerHeight||600)-56:Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
@@ -1623,8 +1621,8 @@ function rPia(root){const s=S.pi;
       k.appendChild(E('div',{style:{position:'absolute',top:'60%',left:'10%',right:'10%',height:'35%',borderRadius:'0 0 5px 5px',background:'radial-gradient(ellipse at 50% 100%,rgba(0,0,0,.02) 0%,transparent 70%)',pointerEvents:'none',zIndex:'0'}}));
       /* Note label */
       k.appendChild(E('span',{style:{fontSize:'8px',color:'#908880',pointerEvents:'none',position:'relative',zIndex:'1',lineHeight:'1'}},`${lbs[ki]}${s.oct+o}`));
-      /* QWERTY label if keyboard enabled and in first octave relative to kbOct */
-      if(s.kbEnabled&&o===0){const kl=kbLabels[off];if(kl)k.appendChild(E('span',{style:{fontSize:'8px',fontWeight:'600',color:'var(--ac)',pointerEvents:'none',position:'relative',zIndex:'1',opacity:'.7',marginTop:'1px'}},kl));}
+      /* QWERTY label — 2 octaves */
+      if(s.kbEnabled&&o<2){const kl=(kbLabels[o]||{})[off];if(kl)k.appendChild(E('span',{style:{fontSize:'8px',fontWeight:'600',color:'var(--ac)',pointerEvents:'none',position:'relative',zIndex:'1',opacity:'.7',marginTop:'1px'}},kl));}
       pw.appendChild(k);wi++});
     bP.forEach((off,ki)=>{if(off<0)return;const midi=base+off,left=o*7*kw+bOff[ki]*kw;
       const bk=E('div',{'data-midi':midi,'data-black':'1',style:{position:'absolute',top:'0',left:`${left}%`,width:`${kw*.6}%`,height:'56%',background:'var(--pk-b-bg)',borderRadius:'0 0 5px 5px',cursor:'pointer',zIndex:'2',boxShadow:'var(--pk-b-shadow)',transition:'transform 70ms,background 70ms,box-shadow 70ms'},
@@ -1639,12 +1637,12 @@ function rPia(root){const s=S.pi;
       bk.appendChild(E('div',{style:{position:'absolute',top:'0',left:'2px',right:'2px',height:'100%',background:'repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(255,255,255,.008) 2px,rgba(255,255,255,.008) 3px)',pointerEvents:'none',borderRadius:'0 0 5px 5px'}}));
       /* Bottom rounded edge */
       bk.appendChild(E('div',{style:{position:'absolute',bottom:'0',left:'2px',right:'2px',height:'4px',borderRadius:'0 0 4px 4px',background:'linear-gradient(180deg,rgba(60,50,40,.5),rgba(30,25,18,.7))',pointerEvents:'none'}}));
-      /* QWERTY label for black keys */
-      if(s.kbEnabled&&o===0){const kl=kbLabels[off];if(kl)bk.appendChild(E('span',{style:{position:'absolute',bottom:'6px',left:'50%',transform:'translateX(-50%)',fontSize:'7px',fontWeight:'600',color:'rgba(232,168,64,.6)',pointerEvents:'none',zIndex:'1'}},kl));}
+      /* QWERTY label for black keys — 2 octaves */
+      if(s.kbEnabled&&o<2){const kl=(kbLabels[o]||{})[off];if(kl)bk.appendChild(E('span',{style:{position:'absolute',bottom:'6px',left:'50%',transform:'translateX(-50%)',fontSize:'7px',fontWeight:'600',color:'rgba(232,168,64,.6)',pointerEvents:'none',zIndex:'1'}},kl));}
       pw.appendChild(bk)})}
   scroll.appendChild(pw);sec.appendChild(scroll);
   /* QWERTY hint */
-  if(s.kbEnabled&&!s.horiz){sec.appendChild(E('div',{style:{fontSize:'9px',color:'var(--t3)',textAlign:'center'}},'Q–U plays current oct · 1=oct down · ==oct up'));}
+  if(s.kbEnabled&&!s.horiz){sec.appendChild(E('div',{style:{fontSize:'9px',color:'var(--t3)',textAlign:'center'}},'Q–U = oct 1 · Z–M = oct 2 · 1=oct down · ==oct up'));}
   root.appendChild(sec)}
 
 /* ═══ CHORDS — PROGRESSION PLAYBACK ═══ */
