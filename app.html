@@ -1531,30 +1531,31 @@ function rPia(root){const s=S.pi;
   const _bs={borderRadius:'10px',background:'var(--s1)',border:'1px solid var(--b1)',color:'var(--t2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   const _bOn={borderRadius:'10px',background:'var(--acg)',border:'1px solid rgba(232,168,64,.2)',color:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'};
   if(s.horiz){
-    const isLandscape=window.innerWidth>window.innerHeight;
-    const exitHoriz=()=>{s.horiz=false;try{screen.orientation.unlock()}catch(e){}try{document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen()}catch(e){}R()};
-    /* Floating control bar */
-    const hBar=E('div',{style:{position:'fixed',top:'8px',left:'50%',transform:'translateX(-50%)',zIndex:'999',display:'flex',gap:'6px',alignItems:'center',background:'rgba(10,10,10,.9)',borderRadius:'14px',padding:'6px 12px',border:'1px solid var(--b2)',backdropFilter:'blur(10px)',whiteSpace:'nowrap'}});
+    /* Robust landscape check — works on iOS and Android */
+    const isLandscape=(screen.orientation?.type||'').includes('landscape')||window.innerWidth>window.innerHeight;
+    const exitHoriz=()=>{s.horiz=false;try{screen.orientation.unlock()}catch(e){}R()};
+    /* If still in portrait, show rotate prompt with large exit button */
+    if(!isLandscape){
+      const rotMsg=E('div',{style:{position:'fixed',inset:'0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',zIndex:'200',gap:'20px'}});
+      rotMsg.appendChild(E('div',{style:{fontSize:'72px'}},'📱'));
+      rotMsg.appendChild(E('div',{style:{fontSize:'20px',color:'var(--t1)',fontWeight:'500'}},'Rotate your phone'));
+      rotMsg.appendChild(E('div',{style:{fontSize:'13px',color:'var(--t2)'}},'Landscape mode for piano'));
+      rotMsg.appendChild(E('button',{style:{marginTop:'12px',padding:'14px 36px',borderRadius:'14px',background:'var(--s1)',border:'2px solid var(--b1)',color:'var(--t1)',fontSize:'16px',fontWeight:'600',cursor:'pointer'},onClick:exitHoriz},'← Back'));
+      sec.appendChild(rotMsg);
+      const onOrient=()=>{if((screen.orientation?.type||'').includes('landscape')||window.innerWidth>window.innerHeight){window.removeEventListener('resize',onOrient);R()}};
+      window.addEventListener('resize',onOrient);
+      root.appendChild(sec);return;
+    }
+    /* Floating control bar — always-visible exit */
+    const hBar=E('div',{style:{position:'fixed',top:'6px',left:'50%',transform:'translateX(-50%)',zIndex:'999',display:'flex',gap:'6px',alignItems:'center',background:'rgba(10,10,10,.92)',borderRadius:'14px',padding:'5px 10px',border:'1px solid var(--b2)',backdropFilter:'blur(10px)',whiteSpace:'nowrap',touchAction:'none'}});
     hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
     hBar.appendChild(E('span',{style:{color:'var(--t1)',fontSize:'12px',fontWeight:'500',minWidth:'60px',textAlign:'center'}},`Oct ${s.oct}–${s.oct+2}`));
     hBar.appendChild(E('button',{style:{..._bs,width:'34px',height:'34px',fontSize:'16px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
-    hBar.appendChild(E('button',{style:{..._bOn,padding:'6px 14px',fontSize:'12px'},onClick:exitHoriz},'✕ Exit'));
+    hBar.appendChild(E('div',{style:{width:'1px',height:'20px',background:'var(--b2)',margin:'0 2px'}}));
+    hBar.appendChild(E('button',{style:{..._bOn,padding:'6px 14px',fontSize:'12px',fontWeight:'600'},onClick:exitHoriz},'✕ Exit'));
     sec.appendChild(hBar);
-    /* If still in portrait, show a clear rotate prompt instead of broken keyboard */
-    if(!isLandscape){
-      const rotMsg=E('div',{style:{position:'fixed',inset:'0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'rgba(10,10,10,.97)',zIndex:'100',gap:'16px'}});
-      rotMsg.appendChild(E('div',{style:{fontSize:'64px',animation:'spin 2s linear infinite'}},'📱'));
-      rotMsg.appendChild(E('div',{style:{fontSize:'18px',color:'var(--t1)',fontWeight:'500'}},'Rotate your phone'));
-      rotMsg.appendChild(E('div',{style:{fontSize:'13px',color:'var(--t2)'}},'Landscape mode for piano'));
-      rotMsg.appendChild(E('button',{style:{marginTop:'8px',padding:'10px 24px',borderRadius:'12px',background:'var(--s1)',border:'1px solid var(--b1)',color:'var(--t2)',fontSize:'13px',cursor:'pointer'},onClick:exitHoriz},'Cancel'));
-      sec.appendChild(rotMsg);
-      /* Re-check orientation when phone rotates */
-      const onOrient=()=>{if(window.innerWidth>window.innerHeight){window.removeEventListener('resize',onOrient);R()}};
-      window.addEventListener('resize',onOrient);
-      return;
-    }
-    /* Small visualizer strip above keys in landscape mode */
-    const hVisCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'70px',display:'block',flexShrink:'0'}});
+    /* Small visualizer strip above keys */
+    const hVisCvs=E('canvas',{id:'pno-vis',style:{width:'100%',height:'60px',display:'block',flexShrink:'0',marginTop:'48px'}});
     sec.appendChild(hVisCvs);setTimeout(()=>initPianoVis(hVisCvs,s),50);
   }else{
   /* ── Row 1: Octave, Instrument, Wide, Fullscreen ── */
@@ -1582,7 +1583,6 @@ function rPia(root){const s=S.pi;
   cr2.appendChild(E('button',{style:{..._bs,padding:'7px 14px',fontSize:'13px',fontWeight:'500',display:'flex',alignItems:'center',gap:'5px'},onClick:()=>{
     s.horiz=true;
     try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}
-    try{const el=document.documentElement;el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen()}catch(e){}
     R()}},
     E('span',{style:{fontSize:'16px',display:'inline-block',transform:'rotate(-90deg)'}},'📱'),
     E('span',{},'Landscape')));
@@ -1600,7 +1600,8 @@ function rPia(root){const s=S.pi;
   const kbLabels=[{0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'},{0:'Z',1:'S',2:'X',3:'D',4:'C',5:'V',6:'G',7:'B',8:'H',9:'N',10:'J',11:'M'}];
   const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch',flexShrink:'0'}});
   const _isLandNow=window.innerWidth>window.innerHeight;
-  const kbH=s.horiz&&_isLandNow?(window.innerHeight||600)-56:Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
+  /* landscape: full height minus hBar(48px) + vis strip(60px) + safe margin(8px) */
+  const kbH=s.horiz&&_isLandNow?Math.max(120,(window.innerHeight||375)-120):Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
   const pw=E('div',{style:{position:'relative',width:`${100*s.zoom}%`,minWidth:'100%',height:kbH+'px',touchAction:'pan-x',userSelect:'none'}});
   const oct=3,tw=oct*7,kw=100/tw,wP=[0,2,4,5,7,9,11],bP=[1,3,-1,6,8,10,-1],lbs=['C','D','E','F','G','A','B'],bOff=[.62,1.72,-1,3.58,4.65,5.72,-1];
   let wi=0;for(let o=0;o<oct;o++){const base=(s.oct+o)*12;
