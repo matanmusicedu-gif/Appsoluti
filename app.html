@@ -1532,9 +1532,12 @@ function rPia(root){const s=S.pi;
     /* Horizontal mode: floating overlay with exit + octave controls */
     const hBar=E('div',{style:{position:'fixed',top:'6px',left:'50%',transform:'translateX(-50%)',zIndex:'999',display:'flex',gap:'6px',alignItems:'center',background:'rgba(10,10,10,.85)',borderRadius:'12px',padding:'4px 10px',border:'1px solid var(--b2)',backdropFilter:'blur(8px)'}});
     hBar.appendChild(E('button',{style:{..._bs,width:'30px',height:'30px',fontSize:'14px'},onClick:()=>{s.oct=Math.max(1,s.oct-1);R()}},'‹'));
-    hBar.appendChild(E('span',{style:{color:'var(--t2)',fontSize:'11px',fontWeight:'500'}},`${s.oct}–${s.oct+2}`));
+    hBar.appendChild(E('span',{style:{color:'var(--t2)',fontSize:'11px',fontWeight:'500'}},`Oct ${s.oct}–${s.oct+2}`));
     hBar.appendChild(E('button',{style:{..._bs,width:'30px',height:'30px',fontSize:'14px'},onClick:()=>{s.oct=Math.min(6,s.oct+1);R()}},'›'));
-    hBar.appendChild(E('button',{style:{..._bOn,padding:'4px 10px',fontSize:'11px'},onClick:()=>{s.horiz=false;R()}},'Exit'));
+    /* iOS hint — screen.orientation.lock not supported on Safari */
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS)hBar.appendChild(E('span',{style:{color:'var(--t3)',fontSize:'9px',marginLeft:'4px'}},'↻ rotate phone'));
+    hBar.appendChild(E('button',{style:{..._bOn,padding:'4px 10px',fontSize:'11px'},onClick:()=>{s.horiz=false;try{screen.orientation.unlock()}catch(e){}try{document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen&&document.webkitExitFullscreen()}catch(e){}R()}},'Exit'));
     sec.appendChild(hBar);
   }else{
   /* ── Row 1: Octave, Instrument, Wide, Fullscreen ── */
@@ -1559,7 +1562,14 @@ function rPia(root){const s=S.pi;
   cr2.appendChild(E('input',{type:'range',min:'10',max:'100',value:String(Math.round(s.vol*100)),style:{width:'90px',accentColor:'var(--ac)'},
     onInput:e=>{s.vol=+(parseInt(e.target.value)/100).toFixed(2)}}));
   /* Wide (landscape) button */
-  cr2.appendChild(E('button',{style:{..._bs,padding:'7px 14px',fontSize:'13px',fontWeight:'500'},onClick:()=>{s.horiz=true;R()}},'↔ Wide'));
+  cr2.appendChild(E('button',{style:{..._bs,padding:'7px 14px',fontSize:'13px',fontWeight:'500'},onClick:()=>{
+    s.horiz=true;
+    /* Try to lock landscape orientation (Android/Chrome) */
+    try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}
+    /* Try fullscreen for immersive mode */
+    const el=document.documentElement;
+    try{el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen()}catch(e){}
+    R()}},'↔ Wide'));
   sec.appendChild(cr2);
   /* ── Fullscreen button ── */
   const fsBtn=E('button',{style:{width:'100%',maxWidth:'340px',padding:'14px',borderRadius:'14px',background:'var(--s1)',border:'2px solid var(--b1)',color:'var(--t1)',fontSize:'16px',fontWeight:'500',cursor:'pointer',letterSpacing:'1px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'},
@@ -1577,8 +1587,9 @@ function rPia(root){const s=S.pi;
   }
   /* Keyboard label mapping for QWERTY overlay */
   const kbLabels={0:'Q',1:'2',2:'W',3:'3',4:'E',5:'R',6:'5',7:'T',8:'6',9:'Y',10:'7',11:'U'};
-  const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch'}});
-  const kbH=s.horiz?(window.innerHeight||600)-20:220;
+  const scroll=E('div',{style:{width:'100%',overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch',flexShrink:'0'}});
+  /* Portrait: fill ~40% of screen height so keyboard is usable on phones */
+  const kbH=s.horiz?(window.innerHeight||600)-20:Math.max(180,Math.min(320,Math.round((window.innerHeight||600)*0.38)));
   const pw=E('div',{style:{position:'relative',width:`${100*s.zoom}%`,minWidth:'100%',height:kbH+'px',touchAction:'pan-x',userSelect:'none'}});
   const oct=3,tw=oct*7,kw=100/tw,wP=[0,2,4,5,7,9,11],bP=[1,3,-1,6,8,10,-1],lbs=['C','D','E','F','G','A','B'],bOff=[.62,1.72,-1,3.58,4.65,5.72,-1];
   let wi=0;for(let o=0;o<oct;o++){const base=(s.oct+o)*12;
